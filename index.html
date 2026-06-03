@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIMENSIA — Panel de Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+  <!-- PANTALLA DE LOGIN -->
+<div id="login-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999">
+  <div class="card" style="width:360px;text-align:center">
+    <div class="logo-name" style="font-size:24px;margin-bottom:4px">DIMENSIA</div>
+    <div class="logo-sub" style="margin-bottom:24px">Panel de control</div>
+    <div class="form-group" style="text-align:left">
+      <label>Nombre del operario</label>
+      <input id="login-nombre" type="text" placeholder="Ej: Juan Pérez">
+    </div>
+    <div class="form-group" style="text-align:left">
+      <label>Legajo</label>
+      <input id="login-legajo" type="text" placeholder="Ej: 1042">
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:8px" onclick="iniciarSesion()">Ingresar al sistema</button>
+  </div>
+</div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-mark">D</span>
+      <div>
+        <div class="logo-name">DIMENSIA</div>
+        <div class="logo-sub">Panel de control</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a class="nav-item active" onclick="showPage('dashboard', this)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" onclick="showPage('inspeccion', this)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="currentColor"/><line x1="8" y1="1.5" x2="8" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Inspeccion en vivo
+      </a>
+      <a class="nav-item" onclick="showPage('piezas', this)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        Tipos de piezas
+      </a>
+
+      <div class="nav-section-label" style="margin-top:16px">Registros</div>
+      <a class="nav-item" onclick="showPage('historial', this)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="11" x2="8" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Historial
+      </a>
+      <a class="nav-item" onclick="showPage('reportes', this)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9 1H4C3 1 2 2 2 3V13C2 14 3 15 4 15H12C13 15 14 14 14 13V6L9 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 1V6H14" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        Reportes
+      </a>
+    </nav>
+
+    <div class="sidebar-status">
+      <div class="status-dot"></div>
+      <span>Sistema activo</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="page-title">Dashboard</h1>
+        <span class="page-date" id="page-date"></span>
+      </div>
+      <div class="topbar-right">
+        <div class="turno-badge" id="operario-badge" style="display:none"></div>
+        <div class="turno-badge">Turno mañana</div>
+        <a onclick="exportarCSV()" class="btn-export" style="cursor:pointer">Exportar CSV</a>
+      </div>
+    </header>
+
+    <!-- PÁGINAS -->
+    <div class="content">
+
+      <!-- ══════════════════════ DASHBOARD ══════════════════════ -->
+      <div class="page active" id="page-dashboard">
+
+        <!-- Alerta -->
+        <div class="alert alert-warn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 13H2L8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="8" y1="7" x2="8" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="12" r="0.5" fill="currentColor" stroke="currentColor"/></svg>
+          <span><strong>Alerta:</strong> Brida DN25 tiene un 22% de rechazo en el último turno. Verificar herramienta de corte.</span>
+        </div>
+
+        <!-- Métricas principales -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Piezas hoy</div>
+            <div class="metric-value blue">247</div>
+            <div class="metric-sub">+12% vs ayer</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Aprobadas</div>
+            <div class="metric-value green">231</div>
+            <div class="metric-sub">93.5% del total</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Rechazadas</div>
+            <div class="metric-value red">16</div>
+            <div class="metric-sub">6.5% del total</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Velocidad actual</div>
+            <div class="metric-value">4.2/min</div>
+            <div class="metric-sub">piezas por minuto</div>
+          </div>
+        </div>
+
+        <!-- Grid de contenido -->
+        <div class="content-grid">
+
+          <!-- Rendimiento por tipo -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Rendimiento por tipo de pieza</div>
+              <span class="card-sub">Últimas 8 horas</span>
+            </div>
+            <div class="bar-list">
+              <div class="bar-item">
+                <div class="bar-info">
+                  <span class="bar-label">Niple NPT 1/2"</span>
+                  <span class="bar-pct green">97%</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill green" style="width:97%"></div></div>
+              </div>
+              <div class="bar-item">
+                <div class="bar-info">
+                  <span class="bar-label">Union NPT 3/4"</span>
+                  <span class="bar-pct green">91%</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill green" style="width:91%"></div></div>
+              </div>
+              <div class="bar-item">
+                <div class="bar-info">
+                  <span class="bar-label">Brida DN25</span>
+                  <span class="bar-pct red">78%</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill red" style="width:78%"></div></div>
+              </div>
+              <div class="bar-item">
+                <div class="bar-info">
+                  <span class="bar-label">Codo 90° 1/2"</span>
+                  <span class="bar-pct green">95%</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill green" style="width:95%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Últimas inspecciones -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Últimas inspecciones</div>
+              <span class="card-sub live-dot-wrap"><span class="live-dot"></span>En vivo</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Pieza</th>
+                  <th>Alto (mm)</th>
+                  <th>Ancho (mm)</th>
+                  <th>Largo (mm)</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="live-table">
+                <tr><td>Niple NPT 1/2"</td><td class="mono">21.3</td><td class="mono">21.3</td><td class="mono">58.2</td><td><span class="pill ok">Aprobada</span></td></tr>
+                <tr><td>Niple NPT 1/2"</td><td class="mono">21.3</td><td class="mono">21.4</td><td class="mono">58.1</td><td><span class="pill ok">Aprobada</span></td></tr>
+                <tr><td>Brida DN25</td><td class="mono">25.9</td><td class="mono">26.1</td><td class="mono">42.1</td><td><span class="pill fail">Rechazada</span></td></tr>
+                <tr><td>Union NPT 3/4"</td><td class="mono">26.7</td><td class="mono">26.8</td><td class="mono">65.0</td><td><span class="pill ok">Aprobada</span></td></tr>
+                <tr><td>Niple NPT 1/2"</td><td class="mono">21.3</td><td class="mono">21.3</td><td class="mono">57.9</td><td><span class="pill ok">Aprobada</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══════════════════════ INSPECCIÓN EN VIVO ══════════════════════ -->
+      <div class="page" id="page-inspeccion">
+        <div class="content-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Pieza en estación</div>
+              <span class="card-sub live-dot-wrap"><span class="live-dot"></span>Midiendo</span>
+            </div>
+            <div class="live-rows">
+              <div class="live-row"><span class="live-label">Tipo</span><span class="live-val" id="insp-tipo">Sin inspecciones</span></div>
+              <div class="live-row"><span class="live-label">Norma</span><span class="live-val mono" id="insp-norma">—</span></div>
+              <div class="live-row">
+                <span class="live-label">Alto</span>
+                <span class="live-val mono" id="insp-alto">— mm</span>
+              </div>
+              <div class="live-row">
+                <span class="live-label">Ancho</span>
+                <span class="live-val mono" id="insp-ancho">— mm</span>
+              </div>
+              <div class="live-row">
+                <span class="live-label">Largo</span>
+                <span class="live-val mono" id="insp-largo">— mm</span>
+              </div>
+              <div class="live-row"><span class="live-label">Operario</span><span class="live-val" id="insp-operario">—</span></div>
+            </div>
+            <div class="result-box ok" id="insp-resultado-box">
+              <div class="result-icon" id="insp-resultado-icon">—</div>
+              <div>
+                <div class="result-title" id="insp-resultado-titulo">Sin datos</div>
+                <div class="result-sub" id="insp-resultado-sub">Esperando primera inspección</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-title">Contador del turno</div>
+              <div class="big-counter">
+                <div class="counter-num">89</div>
+                <div class="counter-label">piezas inspeccionadas</div>
+                <div class="counter-pills">
+                  <span class="pill ok">85 aprobadas</span>
+                  <span class="pill fail">4 rechazadas</span>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">Tiempo de ciclo</div>
+              <div class="cycle-display">
+                <span class="cycle-num mono">1.8</span>
+                <span class="cycle-unit">segundos</span>
+              </div>
+              <div class="cycle-bar-wrap">
+                <div class="cycle-bar" style="width:36%"></div>
+              </div>
+              <div class="cycle-ref">Máximo: 5 seg | Promedio hoy: 1.9 seg</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PANEL MONITOREO 5 SENSORES ── -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <div class="card-title">Lecturas brutas — 5 sensores</div>
+            <span class="card-sub live-dot-wrap"><span class="live-dot"></span> En vivo</span>
+          </div>
+          <div class="live-rows">
+            <div class="live-row">
+              <span class="live-label">S1 — Alto (superior)</span>
+              <span class="live-val mono" id="sensor-s1">— mm</span>
+            </div>
+            <div class="live-row">
+              <span class="live-label">S2 — Lateral izquierdo</span>
+              <span class="live-val mono" id="sensor-s2">— mm</span>
+            </div>
+            <div class="live-row">
+              <span class="live-label">S2' — Lateral derecho</span>
+              <span class="live-val mono" id="sensor-s2p">— mm</span>
+            </div>
+            <div class="live-row">
+              <span class="live-label">S3 — Frontal</span>
+              <span class="live-val mono" id="sensor-s3">— mm</span>
+            </div>
+            <div class="live-row">
+              <span class="live-label">S3' — Posterior</span>
+              <span class="live-val mono" id="sensor-s3p">— mm</span>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid #eee">
+            <div class="live-rows">
+              <div class="live-row">
+                <span class="live-label"><b>Alto calculado</b></span>
+                <span class="live-val mono" id="dim-alto">— mm</span>
+              </div>
+              <div class="live-row">
+                <span class="live-label"><b>Ancho calculado</b></span>
+                <span class="live-val mono" id="dim-ancho">— mm</span>
+              </div>
+              <div class="live-row">
+                <span class="live-label"><b>Largo calculado</b></span>
+                <span class="live-val mono" id="dim-largo">— mm</span>
+              </div>
+            </div>
+          </div>
+          <div id="sensor-alerta" style="display:none;margin-top:10px;padding:8px 12px;background:#FEF2F2;border-left:4px solid #DC2626;border-radius:4px;color:#DC2626;font-size:13px">
+            ⚠ Sensor con lectura inconsistente — verificar alineacion
+          </div>
+        </div>
+
+        <!-- ── PANEL CALIBRACION ── -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <div class="card-title">Calibracion del sistema</div>
+            <span class="card-sub">Sistema diferencial — 5 sensores</span>
+          </div>
+          <div style="font-size:13px;color:#555;margin-bottom:14px">
+            Seguí los pasos en orden. Repetir cada vez que se mueva o desmonte cualquier sensor.
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="padding:10px 14px;background:#F4F4F4;border-radius:8px;font-size:13px;display:flex;gap:10px;align-items:flex-start">
+              <span style="font-weight:700;color:#0A1628;min-width:60px">Paso 1</span>
+              <span>Asegurate que la cinta esté <b>completamente vacía</b> y ningún objeto tape los sensores.</span>
+            </div>
+            <div style="padding:10px 14px;background:#F4F4F4;border-radius:8px;font-size:13px;display:flex;gap:10px;align-items:flex-start">
+              <span style="font-weight:700;color:#0A1628;min-width:60px">Paso 2</span>
+              <span>Verificá que <b>S2 y S2'</b> estén exactamente a la misma altura desde la cinta (tolerancia ±0.5 mm). Usar nivel o calibre.</span>
+            </div>
+            <div style="padding:10px 14px;background:#F4F4F4;border-radius:8px;font-size:13px;display:flex;gap:10px;align-items:flex-start">
+              <span style="font-weight:700;color:#0A1628;min-width:60px">Paso 3</span>
+              <span>Verificá que <b>S3 y S3'</b> estén en el mismo eje longitudinal de la cinta. Usar hilo tensado o regla.</span>
+            </div>
+            <div style="padding:10px 14px;background:#F4F4F4;border-radius:8px;font-size:13px;display:flex;gap:10px;align-items:flex-start">
+              <span style="font-weight:700;color:#0A1628;min-width:60px">Paso 4</span>
+              <span>Hacé click en <b>"Iniciar calibración"</b>. El sistema lee los 5 sensores y guarda los valores de referencia en <span style="font-family:monospace">calibracion.json</span>.</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+            <button class="btn-primary" onclick="iniciarCalibracion()">Iniciar calibracion</button>
+            <span id="calib-estado" style="font-size:13px;color:#555"></span>
+          </div>
+          <div id="calib-resultados" style="display:none;margin-top:14px;padding:12px 16px;background:#F0FDF4;border-left:4px solid #16A34A;border-radius:8px;font-size:13px">
+            <b style="color:#16A34A">✓ Calibracion guardada correctamente</b>
+            <div style="margin-top:8px;color:#555;font-family:monospace;font-size:12px" id="calib-valores"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══════════════════════ TIPOS DE PIEZAS ══════════════════════ -->
+      <div class="page" id="page-piezas">
+        <div class="content-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Piezas registradas</div>
+              <button class="btn-primary" onclick="toggleForm()">+ Nueva pieza</button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr><th>Nombre</th><th>Norma</th><th>OD ref.</th><th>ID ref.</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Niple NPT 1/2"</td><td class="mono">ASME B16.11</td><td class="mono">21.3 mm</td><td class="mono">14.0 mm</td><td><span class="pill pend" style="cursor:pointer">editar</span></td></tr>
+                <tr><td>Union NPT 3/4"</td><td class="mono">ASME B16.11</td><td class="mono">26.7 mm</td><td class="mono">18.0 mm</td><td><span class="pill pend" style="cursor:pointer">editar</span></td></tr>
+                <tr><td>Brida DN25</td><td class="mono">DIN 2999</td><td class="mono">25.8 mm</td><td class="mono">—</td><td><span class="pill pend" style="cursor:pointer">editar</span></td></tr>
+                <tr><td>Codo 90° 1/2"</td><td class="mono">ASME B16.11</td><td class="mono">21.3 mm</td><td class="mono">—</td><td><span class="pill pend" style="cursor:pointer">editar</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- FORMULARIO NUEVA PIEZA -->
+          <div class="card" id="form-card" style="display:none">
+            <div class="card-title">Nueva pieza</div>
+            <div class="form-group">
+              <label>Nombre de la pieza</label>
+              <input id="pieza-nombre" type="text" placeholder="Ej: Niple NPT 1/2&quot;">
+            </div>
+            <div class="form-group">
+              <label>Norma aplicable</label>
+              <select id="pieza-norma">
+                <option>ASME B16.11</option>
+                <option>DIN 2999</option>
+                <option>Otra</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>OD referencia (mm)</label>
+                <input id="pieza-od-ref" type="number" placeholder="21.30">
+              </div>
+              <div class="form-group">
+                <label>Tolerancia OD</label>
+                <input id="pieza-od-tol" type="number" placeholder="0.50">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>ID referencia (mm)</label>
+                <input id="pieza-id-ref" type="number" placeholder="14.00">
+              </div>
+              <div class="form-group">
+                <label>Tolerancia ID</label>
+                <input id="pieza-id-tol" type="number" placeholder="0.50">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Largo referencia (mm)</label>
+                <input id="pieza-largo-ref" type="number" placeholder="58.00">
+              </div>
+              <div class="form-group">
+                <label>Tolerancia largo</label>
+                <input id="pieza-largo-tol" type="number" placeholder="1.00">
+              </div>
+            </div>
+           <div class="qr-preview">
+              <div id="qr-canvas"></div>
+              <div>
+                <div class="qr-id mono" id="qr-id-texto">El QR aparecerá al guardar</div>
+                <div class="qr-hint">El QR se genera automáticamente al guardar</div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" onclick="guardarPieza()">Guardar pieza</button>
+              <button class="btn-ghost" onclick="toggleForm()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════ HISTORIAL ══════════════════════ -->
+      <div class="page" id="page-historial">
+        <div class="card">
+          <div class="filter-row">
+            <div class="form-group"><label>Tipo de pieza</label>
+              <select><option>Todas</option><option>Niple NPT 1/2"</option><option>Brida DN25</option></select>
+            </div>
+            <div class="form-group"><label>Estado</label>
+              <select><option>Todos</option><option>Aprobadas</option><option>Rechazadas</option></select>
+            </div>
+            <div class="form-group"><label>Desde</label><input type="date"></div>
+            <div class="form-group"><label>Hasta</label><input type="date"></div>
+            <button class="btn-primary" style="align-self:flex-end;margin-bottom:0">Filtrar</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <div class="card-title">247 inspecciones encontradas</div>
+            <a onclick="exportarCSV()" class="btn-ghost" style="cursor:pointer">Exportar CSV</a>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Pieza</th><th>Alto (mm)</th><th>Ancho (mm)</th><th>Largo (mm)</th><th>Estado</th><th>Fecha y hora</th></tr>
+            </thead>
+            <tbody id="historial-table">
+              <tr><td class="mono gray">#247</td><td>Niple NPT 1/2"</td><td class="mono">21.3</td><td class="mono">21.3</td><td class="mono">58.2</td><td><span class="pill ok">Aprobada</span></td><td class="gray small">Hoy 14:32</td></tr>
+              <tr><td class="mono gray">#246</td><td>Brida DN25</td><td class="mono">25.9</td><td class="mono">26.1</td><td class="mono">42.1</td><td><span class="pill fail">Rechazada</span></td><td class="gray small">Hoy 14:31</td></tr>
+              <tr><td class="mono gray">#245</td><td>Union NPT 3/4"</td><td class="mono">26.7</td><td class="mono">26.8</td><td class="mono">65.0</td><td><span class="pill ok">Aprobada</span></td><td class="gray small">Hoy 14:29</td></tr>
+              <tr><td class="mono gray">#244</td><td>Niple NPT 1/2"</td><td class="mono">21.3</td><td class="mono">21.3</td><td class="mono">57.9</td><td><span class="pill ok">Aprobada</span></td><td class="gray small">Hoy 14:28</td></tr>
+              <tr><td class="mono gray">#243</td><td>Codo 90° 1/2"</td><td class="mono">21.3</td><td class="mono">21.3</td><td class="mono">38.5</td><td><span class="pill ok">Aprobada</span></td><td class="gray small">Hoy 14:26</td></tr>
+              <tr><td class="mono gray">#242</td><td>Brida DN25</td><td class="mono">25.8</td><td class="mono">26.0</td><td class="mono">41.9</td><td><span class="pill fail">Rechazada</span></td><td class="gray small">Hoy 14:24</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══════════════════════ REPORTES ══════════════════════ -->
+      <div class="page" id="page-reportes">
+        <div class="content-grid">
+          <div class="card">
+            <div class="card-title">Generar reporte</div>
+            <div class="form-group"><label>Tipo de reporte</label>
+              <select>
+                <option>Trazabilidad ASME B16.11</option>
+                <option>Trazabilidad DIN 2999</option>
+                <option>Resumen de turno</option>
+                <option>Informe mensual</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Período</label>
+              <select><option>Turno actual</option><option>Hoy</option><option>Esta semana</option><option>Este mes</option></select>
+            </div>
+            <div class="form-group"><label>Tipo de pieza</label>
+              <select><option>Todas</option><option>Niple NPT 1/2"</option><option>Brida DN25</option></select>
+            </div>
+            <div class="form-group"><label>Formato</label>
+              <select><option>PDF</option><option>CSV</option></select>
+            </div>
+            <button class="btn-primary" style="width:100%;margin-top:8px" onclick="this.textContent='Generando...';setTimeout(()=>this.textContent='Reporte generado ✓',1200)">
+              Generar reporte
+            </button>
+          </div>
+          <div class="card">
+            <div class="card-title">Reportes generados</div>
+            <div class="report-list">
+              <div class="report-item">
+                <div>
+                  <div class="report-name">Trazabilidad ASME — Turno mañana</div>
+                  <div class="report-meta mono">89 piezas · 95.5% aprobación</div>
+                </div>
+                <div class="report-actions">
+                  <span class="gray small">Hoy</span>
+                  <span class="pill pend" style="cursor:pointer">PDF</span>
+                </div>
+              </div>
+              <div class="report-item">
+                <div>
+                  <div class="report-name">Resumen diario</div>
+                  <div class="report-meta mono">247 piezas · 93.5% aprobación</div>
+                </div>
+                <div class="report-actions">
+                  <span class="gray small">Ayer</span>
+                  <span class="pill pend" style="cursor:pointer">PDF</span>
+                </div>
+              </div>
+              <div class="report-item">
+                <div>
+                  <div class="report-name">Informe mensual — Marzo</div>
+                  <div class="report-meta mono">4.832 piezas</div>
+                </div>
+                <div class="report-actions">
+                  <span class="gray small">01/04</span>
+                  <span class="pill pend" style="cursor:pointer">CSV</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
